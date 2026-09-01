@@ -86,8 +86,9 @@ public class WidgetsPage extends BasePage {
 
     // --- Tabla ---
 
+    /** allVisible y no findElements: leer sin esperar devuelve 0 si la tabla no renderizo todavia. */
     public int tableRowCount() {
-        return driver.findElements(By.cssSelector("#table1 tbody tr")).size();
+        return allVisible(By.cssSelector("#table1 tbody tr")).size();
     }
 
     /** Devuelve los valores de la columna con el encabezado dado. */

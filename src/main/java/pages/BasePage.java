@@ -43,6 +43,11 @@ public abstract class BasePage {
         return wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(locator));
     }
 
+    /** Espera a que la URL contenga el fragmento indicado. */
+    protected void urlContains(String fragmento) {
+        wait.until(ExpectedConditions.urlContains(fragmento));
+    }
+
     /** True si el elemento aparece dentro del timeout; false si no. No lanza. */
     protected boolean isVisible(By locator) {
         try {

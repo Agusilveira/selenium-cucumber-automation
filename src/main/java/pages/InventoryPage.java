@@ -39,12 +39,20 @@ public class InventoryPage extends BasePage {
         return By.cssSelector("[data-test='remove-" + slug(producto) + "']");
     }
 
+    /**
+     * SauceDemo cambia el boton de "Add to cart" a "Remove" cuando el producto
+     * entra al carrito. Esperar ese cambio hace que la accion sea sincronica con
+     * su propio efecto: sin eso, el paso siguiente puede leer el carrito antes de
+     * que el DOM se haya actualizado.
+     */
     public void addToCart(String producto) {
         clickable(addButtonFor(producto)).click();
+        visible(removeButtonFor(producto));
     }
 
     public void removeFromCart(String producto) {
         clickable(removeButtonFor(producto)).click();
+        visible(addButtonFor(producto));
     }
 
     /** 0 cuando el badge no está presente: SauceDemo lo oculta con el carrito vacío. */
@@ -53,8 +61,10 @@ public class InventoryPage extends BasePage {
         return badge.isEmpty() ? 0 : Integer.parseInt(badge.get(0).getText().trim());
     }
 
+    /** Espera a llegar al carrito: si no, el paso siguiente busca sus elementos en la pagina anterior. */
     public void openCart() {
         clickable(CART_LINK).click();
+        urlContains("cart.html");
     }
 
     public void sortBy(String criterio) {

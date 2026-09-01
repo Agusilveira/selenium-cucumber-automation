@@ -3,6 +3,7 @@ package pages;
 import config.Env;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import java.math.BigDecimal;
 
@@ -22,11 +23,35 @@ public class CheckoutPage extends BasePage {
         super(driver, env);
     }
 
+    /**
+     * Los campos se buscan con clickable y no con visible: un input puede estar
+     * visible pero todavia no aceptar texto, y un sendKeys que se pierde deja el
+     * formulario incompleto. Ahi SauceDemo se queda en el paso uno y el fallo
+     * aparece mas adelante, buscando elementos de una pagina a la que nunca llego.
+     * Esperar la navegacion convierte eso en un error inmediato y claro.
+     */
     public void fillDetails(String nombre, String apellido, String codigoPostal) {
-        visible(FIRST_NAME).sendKeys(nombre);
-        visible(LAST_NAME).sendKeys(apellido);
-        visible(POSTAL).sendKeys(codigoPostal);
+        escribir(FIRST_NAME, nombre);
+        escribir(LAST_NAME, apellido);
+        escribir(POSTAL, codigoPostal);
         clickable(CONTINUE).click();
+        urlContains("checkout-step-two.html");
+    }
+
+    /**
+     * Escribe y verifica que el valor haya quedado. Un sendKeys sobre un campo que
+     * todavia no esta listo se pierde en silencio, el formulario queda incompleto
+     * y SauceDemo se queda en el paso uno. El sintoma aparece recien varios pasos
+     * despues, buscando elementos de una pagina a la que nunca se llego.
+     */
+    private void escribir(By campo, String valor) {
+        WebElement input = clickable(campo);
+        input.clear();
+        input.sendKeys(valor);
+        if (!valor.equals(input.getDomProperty("value"))) {
+            input.clear();
+            input.sendKeys(valor);
+        }
     }
 
     public void finish() {
