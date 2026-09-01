@@ -25,3 +25,8 @@ Característica: Login en SauceDemo
       | locked_out_user     | secret_sauce | error     |
       | standard_user       | mala_clave   | error     |
       | usuario_inexistente | secret_sauce | error     |
+
+  @regresion
+  Escenario: Un usuario con la app lenta igual llega al inventario
+    Cuando ingreso con el usuario "performance_glitch_user"
+    Entonces veo la lista de productos

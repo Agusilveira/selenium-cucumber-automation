@@ -9,6 +9,8 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 import java.time.Duration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Crea un WebDriver ya configurado. Selenium Manager (incluido desde 4.6)
@@ -19,6 +21,26 @@ import java.time.Duration;
  * produce tiempos impredecibles. Toda la espera vive en BasePage.
  */
 public final class DriverFactory {
+
+    /**
+     * Selenium busca una versión de CDP que coincida con el Chrome instalado y avisa
+     * por cada driver cuando no la encuentra. Este framework no usa DevTools, así que
+     * el aviso solo ensucia la salida.
+     *
+     * Las referencias son campos y no variables locales a propósito: java.util.logging
+     * mantiene los loggers con referencias débiles, y uno sin referencia fuerte se
+     * recolecta y vuelve al nivel por defecto.
+     */
+    private static final Logger[] SILENCIADOS = {
+            Logger.getLogger("org.openqa.selenium.devtools.CdpVersionFinder"),
+            Logger.getLogger("org.openqa.selenium.devtools"),
+            Logger.getLogger("org.openqa.selenium.chromium.ChromiumDriver"),
+            Logger.getLogger("org.openqa.selenium.chromium")
+    };
+
+    static {
+        for (Logger logger : SILENCIADOS) logger.setLevel(Level.SEVERE);
+    }
 
     private DriverFactory() {}
 
