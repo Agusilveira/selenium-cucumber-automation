@@ -61,7 +61,10 @@ public final class DriverFactory {
     private static WebDriver chrome(Env env) {
         ChromeOptions options = new ChromeOptions();
         if (env.headless()) options.addArguments("--headless=new");
-        options.addArguments("--disable-notifications", "--disable-gpu", "--no-sandbox");
+        // --disable-dev-shm-usage: los contenedores de CI montan un /dev/shm chico
+        // y Chrome headless crashea al quedarse sin memoria compartida.
+        options.addArguments("--disable-notifications", "--disable-gpu",
+                "--no-sandbox", "--disable-dev-shm-usage");
         return new ChromeDriver(options);
     }
 
