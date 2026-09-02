@@ -72,8 +72,9 @@ public final class DriverFactory {
         options.addArguments("--window-size=1280,1024");
         // --disable-dev-shm-usage: los contenedores de CI montan un /dev/shm chico
         // y Chrome headless puede quedarse sin memoria compartida.
-        options.addArguments("--disable-notifications", "--disable-gpu",
-                "--no-sandbox", "--disable-dev-shm-usage");
+        // Sin --disable-gpu: en --headless=new es innecesario y desactiva el
+        // compositor, que es justamente quien entrega los eventos de entrada.
+        options.addArguments("--disable-notifications", "--no-sandbox", "--disable-dev-shm-usage");
         // Cuando Chrome da una ventana por ocluida o en segundo plano descarta los
         // eventos de entrada: el click sale de Selenium sin error y la pagina nunca
         // lo recibe. Pasa en headless y empeora con varios navegadores a la vez.

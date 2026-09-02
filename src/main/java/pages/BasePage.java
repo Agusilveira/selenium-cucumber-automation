@@ -78,33 +78,28 @@ public abstract class BasePage {
                 ultimoError = e;
             }
         }
-        // DIAGNOSTICO TEMPORAL: registrar donde aterriza realmente el click
+        // Ultimo recurso: click por JavaScript.
+        //
+        // Verificado en el CI que el elemento y su handler estan bien: un click por
+        // JS sobre el mismo boton funciona cuando el nativo no. Instrumentando la
+        // pagina con un listener propio, el evento del click nativo directamente no
+        // llega (recibidos: []), sin que Selenium lance ninguna excepcion. Es un
+        // problema de entrega de eventos de Chrome headless en el runner, no del
+        // test ni de la aplicacion.
+        //
+        // Cuesta fidelidad: un click por JS no ejercita el mismo camino que el de
+        // una persona. Por eso es el ultimo recurso y no el metodo por defecto, y
+        // avisa cada vez que hace falta. Si empieza a aparecer seguido, el problema
+        // de entrega volvio y hay que atacarlo de nuevo, no acostumbrarse a esto.
+        System.out.println("Click nativo sin efecto en " + boton + ", usando JavaScript");
+        ((org.openqa.selenium.JavascriptExecutor) driver)
+                .executeScript("arguments[0].click();", driver.findElement(boton));
         try {
-            var js = (org.openqa.selenium.JavascriptExecutor) driver;
-            js.executeScript(
-                    "window.__clicks = [];"
-                  + "if (!window.__espia) { window.__espia = true;"
-                  + "  document.addEventListener('click', function(e) {"
-                  + "    window.__clicks.push([Math.round(e.clientX), Math.round(e.clientY),"
-                  + "      e.target.tagName + '#' + (e.target.id || '?')]); }, true); }");
-            WebElement el = driver.findElement(boton);
-            String errClick = "ninguno"; try { el.click(); } catch (Exception ex) { errClick = ex.getClass().getSimpleName() + ": " + ex.getMessage(); }
-            Thread.sleep(800);
-            Object info = js.executeScript(
-                    "const r = arguments[0].getBoundingClientRect();"
-                  + "return JSON.stringify({"
-                  + " esperado: [Math.round(r.left + r.width/2), Math.round(r.top + r.height/2)],"
-                  + " recibidos: window.__clicks,"
-                  + " dpr: window.devicePixelRatio,"
-                  + " viewport: [window.innerWidth, window.innerHeight],"
-                  + " outer: [window.outerWidth, window.outerHeight],"
-                  + " pantalla: [window.screen.width, window.screen.height]"
-                  + "});", el);
-            System.out.println("DIAGPOS|" + boton + "|errClick=" + errClick + "|" + info);
-        } catch (Exception e) {
-            System.out.println("DIAGPOS|" + boton + "|error=" + e.getMessage());
+            shortWait.until(efecto);
+            return;
+        } catch (TimeoutException e) {
+            throw ultimoError;
         }
-        throw ultimoError;
     }
 
     /** True si el elemento aparece dentro del timeout; false si no. No lanza. */
