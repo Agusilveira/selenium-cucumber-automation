@@ -78,6 +78,20 @@ public abstract class BasePage {
                 ultimoError = e;
             }
         }
+        // DIAGNOSTICO TEMPORAL: si el click por JS si funciona, el handler esta bien
+        // y el problema es como se despacha el click por coordenadas.
+        try {
+            WebElement el = driver.findElement(boton);
+            Object antes = ((org.openqa.selenium.JavascriptExecutor) driver)
+                    .executeScript("return document.location.href + '|' + arguments[0].outerHTML.slice(0,60)", el);
+            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", el);
+            Thread.sleep(1500);
+            Object despues = ((org.openqa.selenium.JavascriptExecutor) driver)
+                    .executeScript("return document.location.href");
+            System.out.println("DIAGJS|" + boton + "|antes=" + antes + "|despuesDeClickJS=" + despues);
+        } catch (Exception e) {
+            System.out.println("DIAGJS|" + boton + "|error=" + e.getMessage());
+        }
         throw ultimoError;
     }
 

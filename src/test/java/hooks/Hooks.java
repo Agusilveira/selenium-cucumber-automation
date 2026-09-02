@@ -25,6 +25,12 @@ public class Hooks {
         try {
             byte[] png = ((TakesScreenshot) context.driver()).getScreenshotAs(OutputType.BYTES);
             scenario.attach(png, "image/png", scenario.getName());
+            // Ademas del adjunto, guarda el PNG como archivo para poder mirarlo
+            // directo desde los artefactos del CI.
+            java.nio.file.Path dir = java.nio.file.Path.of("target", "screenshots");
+            java.nio.file.Files.createDirectories(dir);
+            String nombre = scenario.getName().replaceAll("[^a-zA-Z0-9]+", "-") + ".png";
+            java.nio.file.Files.write(dir.resolve(nombre), png);
             scenario.attach(context.driver().getPageSource(), "text/html", "page-source");
         } catch (Exception e) {
             scenario.log("No se pudo capturar la evidencia: " + e.getMessage());
