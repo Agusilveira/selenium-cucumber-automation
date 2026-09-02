@@ -78,19 +78,30 @@ public abstract class BasePage {
                 ultimoError = e;
             }
         }
-        // DIAGNOSTICO TEMPORAL: si el click por JS si funciona, el handler esta bien
-        // y el problema es como se despacha el click por coordenadas.
+        // DIAGNOSTICO TEMPORAL: registrar donde aterriza realmente el click
         try {
+            var js = (org.openqa.selenium.JavascriptExecutor) driver;
+            js.executeScript(
+                    "window.__clicks = [];"
+                  + "if (!window.__espia) { window.__espia = true;"
+                  + "  document.addEventListener('click', function(e) {"
+                  + "    window.__clicks.push([Math.round(e.clientX), Math.round(e.clientY),"
+                  + "      e.target.tagName + '#' + (e.target.id || '?')]); }, true); }");
             WebElement el = driver.findElement(boton);
-            Object antes = ((org.openqa.selenium.JavascriptExecutor) driver)
-                    .executeScript("return document.location.href + '|' + arguments[0].outerHTML.slice(0,60)", el);
-            ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", el);
-            Thread.sleep(1500);
-            Object despues = ((org.openqa.selenium.JavascriptExecutor) driver)
-                    .executeScript("return document.location.href");
-            System.out.println("DIAGJS|" + boton + "|antes=" + antes + "|despuesDeClickJS=" + despues);
+            try { el.click(); } catch (Exception ignorado) { }
+            Thread.sleep(800);
+            Object info = js.executeScript(
+                    "const r = arguments[0].getBoundingClientRect();"
+                  + "return JSON.stringify({"
+                  + " esperado: [Math.round(r.left + r.width/2), Math.round(r.top + r.height/2)],"
+                  + " recibidos: window.__clicks,"
+                  + " dpr: window.devicePixelRatio,"
+                  + " viewport: [window.innerWidth, window.innerHeight],"
+                  + " outer: [window.outerWidth, window.outerHeight]"
+                  + "});", el);
+            System.out.println("DIAGPOS|" + boton + "|" + info);
         } catch (Exception e) {
-            System.out.println("DIAGJS|" + boton + "|error=" + e.getMessage());
+            System.out.println("DIAGPOS|" + boton + "|error=" + e.getMessage());
         }
         throw ultimoError;
     }
