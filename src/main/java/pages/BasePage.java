@@ -78,7 +78,31 @@ public abstract class BasePage {
                 ultimoError = e;
             }
         }
+        diagnosticarClickPerdido(boton);
         throw ultimoError;
+    }
+
+    // DIAGNOSTICO TEMPORAL: que hay realmente en el punto donde aterriza el click
+    private void diagnosticarClickPerdido(By boton) {
+        try {
+            WebElement el = driver.findElement(boton);
+            Object info = ((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                    "const e = arguments[0];"
+                    + "const r = e.getBoundingClientRect();"
+                    + "const cx = r.left + r.width/2, cy = r.top + r.height/2;"
+                    + "const enPunto = document.elementFromPoint(cx, cy);"
+                    + "return JSON.stringify({"
+                    + " boton: e.outerHTML.slice(0,150),"
+                    + " rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)],"
+                    + " scroll: [Math.round(window.scrollX), Math.round(window.scrollY)],"
+                    + " enPunto: enPunto ? enPunto.outerHTML.slice(0,150) : null,"
+                    + " esElMismo: enPunto === e,"
+                    + " readyState: document.readyState"
+                    + "});", el);
+            System.out.println("DIAGCLICK|" + boton + "|" + info);
+        } catch (Exception e) {
+            System.out.println("DIAGCLICK|" + boton + "|error=" + e.getMessage());
+        }
     }
 
     /** True si el elemento aparece dentro del timeout; false si no. No lanza. */
