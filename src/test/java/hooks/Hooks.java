@@ -23,6 +23,17 @@ public class Hooks {
     public void capturarEvidenciaSiFalla(Scenario scenario) {
         if (!scenario.isFailed()) return;
         try {
+            // DIAGNOSTICO TEMPORAL: medir ventana y viewport reales al fallar
+            var d = context.driver();
+            Object vp = ((org.openqa.selenium.JavascriptExecutor) d).executeScript(
+                    "return window.innerWidth + 'x' + window.innerHeight");
+            System.out.println("DIAG|ventana=" + d.manage().window().getSize()
+                    + "|viewport=" + vp + "|url=" + d.getCurrentUrl()
+                    + "|escenario=" + scenario.getName());
+        } catch (Exception e) {
+            System.out.println("DIAG|error=" + e.getMessage());
+        }
+        try {
             byte[] png = ((TakesScreenshot) context.driver()).getScreenshotAs(OutputType.BYTES);
             scenario.attach(png, "image/png", scenario.getName());
             scenario.attach(context.driver().getPageSource(), "text/html", "page-source");
