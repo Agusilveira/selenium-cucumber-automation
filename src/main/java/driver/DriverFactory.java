@@ -74,6 +74,12 @@ public final class DriverFactory {
         // y Chrome headless puede quedarse sin memoria compartida.
         options.addArguments("--disable-notifications", "--disable-gpu",
                 "--no-sandbox", "--disable-dev-shm-usage");
+        // Cuando Chrome da una ventana por ocluida o en segundo plano descarta los
+        // eventos de entrada: el click sale de Selenium sin error y la pagina nunca
+        // lo recibe. Pasa en headless y empeora con varios navegadores a la vez.
+        options.addArguments("--disable-backgrounding-occluded-windows",
+                "--disable-renderer-backgrounding",
+                "--disable-background-timer-throttling");
         return new ChromeDriver(options);
     }
 

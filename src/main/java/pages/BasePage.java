@@ -88,7 +88,7 @@ public abstract class BasePage {
                   + "    window.__clicks.push([Math.round(e.clientX), Math.round(e.clientY),"
                   + "      e.target.tagName + '#' + (e.target.id || '?')]); }, true); }");
             WebElement el = driver.findElement(boton);
-            try { el.click(); } catch (Exception ignorado) { }
+            String errClick = "ninguno"; try { el.click(); } catch (Exception ex) { errClick = ex.getClass().getSimpleName() + ": " + ex.getMessage(); }
             Thread.sleep(800);
             Object info = js.executeScript(
                     "const r = arguments[0].getBoundingClientRect();"
@@ -99,7 +99,7 @@ public abstract class BasePage {
                   + " viewport: [window.innerWidth, window.innerHeight],"
                   + " outer: [window.outerWidth, window.outerHeight]"
                   + "});", el);
-            System.out.println("DIAGPOS|" + boton + "|" + info);
+            System.out.println("DIAGPOS|" + boton + "|errClick=" + errClick + "|" + info);
         } catch (Exception e) {
             System.out.println("DIAGPOS|" + boton + "|error=" + e.getMessage());
         }
