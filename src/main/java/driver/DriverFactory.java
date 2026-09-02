@@ -1,7 +1,6 @@
 package driver;
 
 import config.Env;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -54,15 +53,25 @@ public final class DriverFactory {
 
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(env.pageLoadTimeout()));
         driver.manage().timeouts().implicitlyWait(Duration.ZERO);
-        driver.manage().window().setSize(new Dimension(1920, 1080));
         return driver;
     }
 
+    /**
+     * El tamano se fija al arrancar y no con window().setSize() despues.
+     *
+     * En --headless=new la superficie de render nace en 800x600. Un setSize
+     * posterior actualiza el viewport que reporta JavaScript, pero no esa
+     * superficie: los clicks se siguen despachando contra 800x600 y todo lo que
+     * quede mas a la derecha o mas abajo no recibe nada. El sintoma es un click
+     * sobre un elemento visible, habilitado y sin nada encima que simplemente no
+     * hace nada, y engana porque window.innerWidth informa el tamano nuevo.
+     */
     private static WebDriver chrome(Env env) {
         ChromeOptions options = new ChromeOptions();
         if (env.headless()) options.addArguments("--headless=new");
+        options.addArguments("--window-size=1920,1080");
         // --disable-dev-shm-usage: los contenedores de CI montan un /dev/shm chico
-        // y Chrome headless crashea al quedarse sin memoria compartida.
+        // y Chrome headless puede quedarse sin memoria compartida.
         options.addArguments("--disable-notifications", "--disable-gpu",
                 "--no-sandbox", "--disable-dev-shm-usage");
         return new ChromeDriver(options);
@@ -71,6 +80,7 @@ public final class DriverFactory {
     private static WebDriver firefox(Env env) {
         FirefoxOptions options = new FirefoxOptions();
         if (env.headless()) options.addArguments("-headless");
+        options.addArguments("--width=1920", "--height=1080");
         return new FirefoxDriver(options);
     }
 }
