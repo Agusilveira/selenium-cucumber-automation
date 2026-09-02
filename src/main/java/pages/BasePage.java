@@ -54,15 +54,16 @@ public abstract class BasePage {
     /**
      * Hace click y confirma que el efecto esperado ocurra; si no, reintenta.
      *
-     * SauceDemo es una aplicacion JavaScript: entre que un boton pasa a ser
-     * visible y clickeable y que su handler queda enlazado hay una ventana en la
-     * que el click se dispara y la pagina no reacciona. Localmente dura
-     * milisegundos y no se nota; en un runner de CI se abre lo suficiente como
-     * para perder clicks en cualquier pagina del flujo.
+     * Un click que no produce efecto no es raro: Chrome headless en el runner del
+     * CI a veces no entrega el evento a la pagina. Selenium no lanza nada, el
+     * elemento esta visible, habilitado y sin nada encima, y simplemente no pasa
+     * nada. Instrumentando la pagina con un listener propio se confirmo que el
+     * evento no llega (recibidos: []), mientras que un click por JavaScript sobre
+     * el mismo elemento si funciona.
      *
-     * Techo conocido: 3 intentos con 4 segundos de espera cada uno. Si una accion
-     * necesitara mas, el problema es otro y conviene diagnosticarlo, no subir el
-     * numero.
+     * Techo conocido: 3 intentos de 4 segundos y despues el recurso de JavaScript.
+     * Si una accion legitima necesitara mas tiempo, el problema es otro y hay que
+     * diagnosticarlo, no subir el numero.
      */
     protected void clickUntil(By boton, ExpectedCondition<?> efecto) {
         TimeoutException ultimoError = null;

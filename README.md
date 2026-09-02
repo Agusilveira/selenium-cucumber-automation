@@ -89,14 +89,48 @@ puede ponerse en rojo no informa nada.
 **Evidencia en las fallas.** Un hook adjunta screenshot y HTML de la página al
 reporte cuando un escenario falla, antes de cerrar el navegador.
 
-## Una nota sobre el caso de frames
+## Dos cosas que costaron encontrar
 
-El caso empezó apuntando a `/iframe` de the-internet, para escribir dentro del
-editor TinyMCE. Fallaba con `InvalidElementStateException` y ninguna variante lo
-resolvía. Inspeccionando la página en vivo apareció el motivo: ese editor está
-en modo `readonly`, así que no admite escritura por ningún medio. El caso se
-movió a `/nested_frames`, que demuestra mejor lo que interesaba mostrar —
-entrar a un frame, bajar a uno anidado, leer, y volver al documento raíz.
+Las dos se resolvieron mirando evidencia, no deduciendo. Van acá porque el
+razonamiento vale más que el diff.
+
+### El editor que no se dejaba escribir
+
+El caso de frames apuntaba a `/iframe` de the-internet, para escribir en el
+editor TinyMCE. Fallaba con `InvalidElementStateException` y ninguna variante
+—quitar el `clear()`, enfocar con click, limpiar por JS— lo resolvía.
+Inspeccionando la página en vivo apareció el motivo: ese editor está en modo
+`readonly` (`mode: "readonly"`), así que no admite escritura por ningún medio.
+El caso era imposible tal como estaba planteado. Se movió a `/nested_frames`,
+que además demuestra más: entrar a un frame, bajar a uno anidado, leer y volver
+al documento raíz.
+
+### Clicks que el navegador nunca recibía
+
+En CI, tres escenarios fallaban solo en Chrome. Los síntomas eran engañosos y
+llevaron a varias hipótesis equivocadas: condiciones de carrera, `/dev/shm`,
+tamaño de ventana. Lo que finalmente lo resolvió fue instrumentar la página con
+un listener de clicks propio y registrar qué llegaba:
+
+```
+esperado: [1368, 356]   recibidos: []   dpr: 1   viewport: [1920, 937]
+```
+
+El evento **no llegaba a la página**. Selenium no lanzaba ninguna excepción, el
+elemento estaba visible, habilitado y sin nada encima (`elementFromPoint`
+devolvía el mismo elemento), y la página en `readyState: complete`. Un click por
+JavaScript sobre ese mismo elemento sí funcionaba. El mismo problema afectaba a
+`sendKeys`: los campos del checkout quedaban vacíos y la aplicación no pasaba
+del primer paso.
+
+Es un problema de entrega de eventos de entrada de Chrome headless en el runner
+—donde `window.screen` reporta 800x600 aunque la ventana sea mayor—, no del test
+ni de la aplicación. La solución es explícita y ruidosa a propósito: el click y
+el `sendKeys` verifican su propio efecto y, si no ocurrió, recurren a
+JavaScript **avisando cada vez que lo hacen**. Un click por JS no ejercita el
+mismo camino que el de una persona, así que es el último recurso y no el método
+por defecto. Si esos avisos se vuelven frecuentes, el problema volvió y hay que
+atacarlo, no acostumbrarse.
 
 ## Fuera de alcance
 

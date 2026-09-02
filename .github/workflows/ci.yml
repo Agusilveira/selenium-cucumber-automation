@@ -47,3 +47,32 @@ jobs:
             target/cucumber-report.html
             target/screenshots
           retention-days: 30
+
+  publicar-reporte:
+    needs: e2e
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Descargar el reporte de Chrome
+        uses: actions/download-artifact@v4
+        with:
+          name: cucumber-report-chrome
+          path: site
+
+      - name: Renombrar a index.html
+        run: mv site/cucumber-report.html site/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
