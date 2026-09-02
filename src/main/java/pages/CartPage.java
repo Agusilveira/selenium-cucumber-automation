@@ -4,6 +4,7 @@ import config.Env;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
 
@@ -21,6 +22,6 @@ public class CartPage extends BasePage {
     }
 
     public void checkout() {
-        clickable(CHECKOUT).click();
+        clickUntil(CHECKOUT, ExpectedConditions.urlContains("checkout-step-one.html"));
     }
 }

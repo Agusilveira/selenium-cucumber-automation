@@ -4,6 +4,7 @@ import config.Env;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.math.BigDecimal;
 
@@ -34,8 +35,7 @@ public class CheckoutPage extends BasePage {
         escribir(FIRST_NAME, nombre);
         escribir(LAST_NAME, apellido);
         escribir(POSTAL, codigoPostal);
-        clickable(CONTINUE).click();
-        urlContains("checkout-step-two.html");
+        clickUntil(CONTINUE, ExpectedConditions.urlContains("checkout-step-two.html"));
     }
 
     /**
@@ -55,7 +55,7 @@ public class CheckoutPage extends BasePage {
     }
 
     public void finish() {
-        clickable(FINISH).click();
+        clickUntil(FINISH, ExpectedConditions.urlContains("checkout-complete.html"));
     }
 
     public String confirmationMessage() {

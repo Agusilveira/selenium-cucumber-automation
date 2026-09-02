@@ -4,6 +4,7 @@ import config.Env;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 import java.math.BigDecimal;
@@ -39,20 +40,15 @@ public class InventoryPage extends BasePage {
         return By.cssSelector("[data-test='remove-" + slug(producto) + "']");
     }
 
-    /**
-     * SauceDemo cambia el boton de "Add to cart" a "Remove" cuando el producto
-     * entra al carrito. Esperar ese cambio hace que la accion sea sincronica con
-     * su propio efecto: sin eso, el paso siguiente puede leer el carrito antes de
-     * que el DOM se haya actualizado.
-     */
+    /** SauceDemo cambia el boton de "Add to cart" a "Remove" cuando el producto entra al carrito. */
     public void addToCart(String producto) {
-        clickable(addButtonFor(producto)).click();
-        visible(removeButtonFor(producto));
+        clickUntil(addButtonFor(producto),
+                ExpectedConditions.visibilityOfElementLocated(removeButtonFor(producto)));
     }
 
     public void removeFromCart(String producto) {
-        clickable(removeButtonFor(producto)).click();
-        visible(addButtonFor(producto));
+        clickUntil(removeButtonFor(producto),
+                ExpectedConditions.visibilityOfElementLocated(addButtonFor(producto)));
     }
 
     /** 0 cuando el badge no está presente: SauceDemo lo oculta con el carrito vacío. */
@@ -61,10 +57,8 @@ public class InventoryPage extends BasePage {
         return badge.isEmpty() ? 0 : Integer.parseInt(badge.get(0).getText().trim());
     }
 
-    /** Espera a llegar al carrito: si no, el paso siguiente busca sus elementos en la pagina anterior. */
     public void openCart() {
-        clickable(CART_LINK).click();
-        urlContains("cart.html");
+        clickUntil(CART_LINK, ExpectedConditions.urlContains("cart.html"));
     }
 
     public void sortBy(String criterio) {
