@@ -2,6 +2,7 @@ package pages;
 
 import config.Env;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -39,19 +40,29 @@ public class CheckoutPage extends BasePage {
     }
 
     /**
-     * Escribe y verifica que el valor haya quedado. Un sendKeys sobre un campo que
-     * todavia no esta listo se pierde en silencio, el formulario queda incompleto
-     * y SauceDemo se queda en el paso uno. El sintoma aparece recien varios pasos
-     * despues, buscando elementos de una pagina a la que nunca se llego.
+     * Escribe y verifica que el valor haya quedado, con el mismo ultimo recurso que
+     * clickUntil: en el runner del CI, Chrome headless a veces no entrega los
+     * eventos de entrada y el sendKeys se pierde sin lanzar ningun error. Un
+     * formulario incompleto deja a SauceDemo en el paso uno, y el sintoma aparece
+     * varios pasos despues buscando elementos de una pagina a la que nunca llego.
+     *
+     * El valor de reserva se asigna con el setter nativo de HTMLInputElement y
+     * disparando el evento input: SauceDemo es React y una asignacion directa a
+     * .value no actualiza su estado interno.
      */
     private void escribir(By campo, String valor) {
         WebElement input = clickable(campo);
         input.clear();
         input.sendKeys(valor);
-        if (!valor.equals(input.getDomProperty("value"))) {
-            input.clear();
-            input.sendKeys(valor);
-        }
+        if (valor.equals(input.getDomProperty("value"))) return;
+
+        System.out.println("sendKeys sin efecto en " + campo + ", asignando por JavaScript");
+        ((JavascriptExecutor) driver).executeScript(
+                "const setter = Object.getOwnPropertyDescriptor("
+              + "    window.HTMLInputElement.prototype, 'value').set;"
+              + "setter.call(arguments[0], arguments[1]);"
+              + "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));",
+                input, valor);
     }
 
     public void finish() {
