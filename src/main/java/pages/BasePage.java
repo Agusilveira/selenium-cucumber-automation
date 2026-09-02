@@ -97,7 +97,8 @@ public abstract class BasePage {
                   + " recibidos: window.__clicks,"
                   + " dpr: window.devicePixelRatio,"
                   + " viewport: [window.innerWidth, window.innerHeight],"
-                  + " outer: [window.outerWidth, window.outerHeight]"
+                  + " outer: [window.outerWidth, window.outerHeight],"
+                  + " pantalla: [window.screen.width, window.screen.height]"
                   + "});", el);
             System.out.println("DIAGPOS|" + boton + "|errClick=" + errClick + "|" + info);
         } catch (Exception e) {

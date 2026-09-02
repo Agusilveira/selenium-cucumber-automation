@@ -69,7 +69,7 @@ public final class DriverFactory {
     private static WebDriver chrome(Env env) {
         ChromeOptions options = new ChromeOptions();
         if (env.headless()) options.addArguments("--headless=new");
-        options.addArguments("--window-size=1920,1080");
+        options.addArguments("--window-size=1280,1024");
         // --disable-dev-shm-usage: los contenedores de CI montan un /dev/shm chico
         // y Chrome headless puede quedarse sin memoria compartida.
         options.addArguments("--disable-notifications", "--disable-gpu",
@@ -86,7 +86,7 @@ public final class DriverFactory {
     private static WebDriver firefox(Env env) {
         FirefoxOptions options = new FirefoxOptions();
         if (env.headless()) options.addArguments("-headless");
-        options.addArguments("--width=1920", "--height=1080");
+        options.addArguments("--width=1280", "--height=1024");
         return new FirefoxDriver(options);
     }
 }
